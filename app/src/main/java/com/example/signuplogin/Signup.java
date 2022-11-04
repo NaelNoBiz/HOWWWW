@@ -2,14 +2,22 @@ package com.example.signuplogin;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +65,7 @@ public class Signup extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
-            connectComponents();
+
         }
     }
 
@@ -68,47 +76,54 @@ public class Signup extends Fragment {
         return inflater.inflate(R.layout.fragment_signup, container, false);
     }
     private EditText etEmail,etPassword,etConfirmPassword;
+    private FirebaseAuth Auth;
+
 
 
 
     private void connectComponents()
     {
-        etEmail=findViewById(R.id.email);
-        etPassword=findViewById(R.id.pass);
-        etConfirmPassword=findViewById(R.id.con);
+        etEmail=getView().findViewById(R.id.email);
+        etPassword=getView().findViewById(R.id.pass);
+        etConfirmPassword=getView().findViewById(R.id.con);
+        Auth=FirebaseAuth.getInstance();
     }
 
-    public void signup(View view)
+    public void signup()
     {
 
         String email,password,confirm;
         email=etEmail.getText().toString();
         password=etPassword.getText().toString();
         confirm=etConfirmPassword.getText().toString();
+        TextView RES= getView().findViewById(R.id.OUTPUTSIGNUP);
 
 
         if(email.trim().isEmpty()||password.trim().isEmpty()||confirm.trim().isEmpty())
         {
-            Toast.makeText(this,"there is an empty space you forgot",Toast.LENGTH_SHORT).show();
+            RES.setText("there is an empty space you forgot");
             return;
         }
 
         if(!CheckEmail(email))
         {
-            Toast.makeText(this,"email incorrect",Toast.LENGTH_SHORT).show();
+            RES.setText("email incorrect");
+
             return;
         }
         if(!CheckPass(password))
         {
-            Toast.makeText(this,"Password not compliant",Toast.LENGTH_SHORT).show();
+            RES.setText("Password not compliant");
+
             return;
         }
         if(!password.equals(confirm))
         {
-            Toast.makeText(this,"Password Confirmation failed",Toast.LENGTH_SHORT).show();
+            RES.setText("Password Confirmation failed");
+
             return;
         }
-
+        createUser();
     }
     public boolean CheckEmail(String CHECK)
     {
@@ -126,5 +141,36 @@ public class Signup extends Fragment {
         matcher = pattern.matcher(CHECK);
 
         return matcher.matches();
+    }
+    public void createUser() {
+        try {
+            if (!etEmail.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty() && !etConfirmPassword.getText().toString().isEmpty()) {
+                if (etPassword.getText().toString().equals(etConfirmPassword.getText().toString())) {
+                    Auth.createUserWithEmailAndPassword(etEmail.getText().toString(), etPassword.getText().toString())
+                            .addOnSuccessListener(authResult -> {
+                                Toast.makeText(getContext(), "Account created.", Toast.LENGTH_SHORT).show();
+                                if (Auth.getCurrentUser() != null) {
+                                    Auth.signOut();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    Toast.makeText(getContext(), "Passwords do not match.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Missing fields identified.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void signup(View view) {
+        signup();
     }
 }

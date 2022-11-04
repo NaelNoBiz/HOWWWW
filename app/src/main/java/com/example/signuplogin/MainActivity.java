@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         ft.replace(R.id.FL1, new LInFrag());
         ft.commit();
     }
+
 
     public void SignupFrag(View view) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

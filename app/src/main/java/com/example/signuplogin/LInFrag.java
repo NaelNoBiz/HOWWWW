@@ -2,11 +2,19 @@ package com.example.signuplogin;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -55,6 +63,51 @@ public class LInFrag extends Fragment {
         }
     }
 
+    private EditText etEmail,etPassword;
+    private FirebaseAuth Auth;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        connectComponents();
+    }
+
+    private void connectComponents()
+    {
+        etEmail=getView().findViewById(R.id.etEmailLN);
+        etPassword=getView().findViewById(R.id.etPasswordLN);
+
+        Auth=FirebaseAuth.getInstance();
+    }
+    private void logInUser(){
+        try{
+            if(!etEmail.getText().toString().isEmpty()&&!etPassword.getText().toString().isEmpty()){
+                if(Auth!=null){
+                    Auth.signInWithEmailAndPassword(etEmail.getText().toString(),etPassword.getText().toString())
+                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                @Override
+                                public void onSuccess(AuthResult authResult) {
+                                    Toast.makeText(getContext(), "User signed in successfully.", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }
+            else{
+                Toast.makeText(getContext(), "Missing fields identified.", Toast.LENGTH_SHORT).show();
+            }
+        }
+        catch (Exception e){
+            Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -63,5 +116,8 @@ public class LInFrag extends Fragment {
     }
 
     public void Login(View view) {
+        logInUser();
     }
+
+
 }
